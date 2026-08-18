@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block titulo %}{{ grupo.nome if grupo else 'Grupo' }}{% endblock %}
+
+{% block conteudo %}
+<div class="row-between" style="margin-bottom:var(--s-4)">
+  <a href="{{ url_for('grupos') }}" style="color:var(--c-text-2);text-decoration:none;font-size:20px">&larr;</a>
+  {% if grupo and grupo.sou_membro %}
+  <form method="post" action="{{ url_for('sair_grupo', grupo_id=grupo.id) }}"
+        onsubmit="return confirm('Queres mesmo sair deste grupo?')">
+    <button class="btn btn--danger btn--sm" type="submit">Sair do grupo</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if not grupo %}
+  <div class="card stack" style="margin-bottom:var(--s-3)">
+    <div class="skeleton" style="width:60%;height:16px"></div>
+    <div class="skeleton" style="width:40%"></div>
+  </div>
+{% else %}
+  <h1 class="h1">{{ grupo.nome }}</h1>
+  <p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-4)">{{ grupo.objetivo }}</p>
+
+  <div class="tags" style="margin-bottom:var(--s-4)">
+    {% for t in grupo.etiquetas %}<span class="tag tag--static">{{ t }}</span>{% endfor %}
+  </div>
+
+  {% if grupo.proximo_encontro %}
+  <div class="card" style="margin-bottom:var(--s-3)">
+    <span class="label">Próximo encontro</span>
+    <div class="row-between">
+      <span class="h3">{{ grupo.proximo_encontro }}</span>
+      {% if grupo.faltam %}
+      <span class="mono" style="font-size:11px;color:var(--c-gold)">{{ grupo.faltam }}</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="card" style="margin-bottom:var(--s-4)">
+    <span class="label">Horas em comum</span>
+    <div class="avail avail--readonly" data-grelha="{{ grupo.grelha|tojson }}"></div>
+    <div class="avail-legend">
+      <span><i style="background:var(--c-surface-2)"></i>Ninguém</span>
+      <span><i style="background:rgba(216,166,43,.34)"></i>Alguns</span>
+      <span><i style="background:var(--c-gold)"></i>Todos</span>
+    </div>
+  </div>
+
+  <span class="label">Membros · {{ grupo.membros|length }}</span>
+  <div class="stack">
+    {% for m in grupo.membros %}
+    <div class="row">
+      <div class="avatar {{ '' if m.admin else 'avatar--muted' }}">{{ m.nome | iniciais }}</div>
+      <span style="flex:1">{{ m.nome }}</span>
+      {% if m.admin %}<span class="mono" style="font-size:10px;color:var(--c-gold)">ADMIN</span>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="push-bottom" style="padding-top:var(--s-4)">
+    {% if grupo.sou_membro %}
+      <a class="btn" href="{{ url_for('chat', grupo_id=grupo.id) }}" style="text-decoration:none">Abrir conversa</a>
+    {% else %}
+      <form method="post" action="{{ url_for('pedir_entrada', grupo_id=grupo.id) }}">
+        <button class="btn" type="submit">Pedir para entrar</button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>desenharGrelhas();</script>
+{% endblock %}

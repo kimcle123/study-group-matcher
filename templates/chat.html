@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}{{ conversa.grupo if conversa else 'Mensagens' }}{% endblock %}
+
+{% block estilos %}
+<style>#mensagens{flex:1;overflow-y:auto;padding-right:2px}</style>
+{% endblock %}
+
+{% block conteudo %}
+<div class="row" style="padding-bottom:var(--s-3);border-bottom:1px solid var(--c-line);margin-bottom:var(--s-3)">
+  <a href="{{ url_for('grupos') }}" style="color:var(--c-text-2);text-decoration:none;font-size:20px">&larr;</a>
+  <div style="flex:1">
+    <h1 class="h3">{{ conversa.grupo if conversa else 'Mensagens' }}</h1>
+    {% if conversa %}
+    <p class="text-sm text-muted" style="font-size:12px">{{ conversa.membros }} membros</p>
+    {% endif %}
+  </div>
+</div>
+
+<div id="mensagens">
+  {% if mensagens %}
+    {% for m in mensagens %}
+      {% if m.minha %}
+        <div class="bubble bubble--me">{{ m.texto }}</div>
+        <div class="bubble-time bubble-time--me">{{ m.hora }}</div>
+      {% else %}
+        <div class="bubble bubble--them">
+          <div class="bubble-author">{{ m.autor }}</div>{{ m.texto }}
+        </div>
+        <div class="bubble-time">{{ m.hora }}</div>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <div class="empty">
+      <div class="empty-mark">✉</div>
+      <div class="h3">A conversa começa contigo</div>
+      <p class="text-sm text-muted" style="margin-top:var(--s-2)">
+        Diz aos outros em que ponto estás na matéria.
+      </p>
+    </div>
+  {% endif %}
+</div>
+
+{% if conversa %}
+<form class="row" style="padding-top:var(--s-3)" method="post"
+      action="{{ url_for('enviar_mensagem', grupo_id=conversa.id) }}">
+  <label class="sr-only" for="texto">Mensagem</label>
+  <input class="field" id="texto" name="texto" type="text" placeholder="Escrever mensagem" autocomplete="off" required>
+  <button class="btn btn--sm" type="submit" aria-label="Enviar"
+          style="height:48px;width:48px;padding:0;border-radius:var(--r-sm)">&#10148;</button>
+</form>
+{% endif %}
+{% endblock %}
+
+{% block navegacao %}
+  {% if not conversa %}
+    {% with ativo = 'chat' %}{% include "_nav.html" %}{% endwith %}
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+const caixa = document.getElementById('mensagens');
+caixa.scrollTop = caixa.scrollHeight;
+</script>
+{% endblock %}

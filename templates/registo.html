@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block titulo %}Criar conta{% endblock %}
+
+{% block conteudo %}
+<div class="row-between" style="margin-bottom:var(--s-4)">
+  <a href="{{ url_for('index') }}" style="color:var(--c-text-2);text-decoration:none;font-size:20px">&larr;</a>
+  <span class="label" style="margin:0" id="contador">Passo 1 de 3</span>
+</div>
+
+<div class="steps" style="margin-bottom:var(--s-5)">
+  <span class="is-done" id="s1"></span><span id="s2"></span><span id="s3"></span>
+</div>
+
+<form method="post" action="{{ url_for('registo') }}" id="formulario">
+
+  <section data-passo="1">
+    <h1 class="h1">Quem és?</h1>
+    <p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-5)">
+      Isto aparece no teu perfil para os outros estudantes.
+    </p>
+
+    <label class="label" for="nome">Nome completo</label>
+    <input class="field" id="nome" name="nome" type="text" required>
+
+    <label class="label" for="email" style="margin-top:var(--s-3)">Email</label>
+    <input class="field" id="email" name="email" type="email" required>
+
+    <label class="label" for="pass" style="margin-top:var(--s-3)">Palavra-passe</label>
+    <input class="field" id="pass" name="pass" type="password" minlength="8" required>
+    <span class="field-help">Pelo menos 8 caracteres.</span>
+
+    <label class="label" for="curso" style="margin-top:var(--s-3)">Curso</label>
+    <select class="field" id="curso" name="curso" required>
+      <option value="">Escolhe o teu curso</option>
+      {% for c in cursos %}<option>{{ c }}</option>{% endfor %}
+    </select>
+
+    <label class="label" style="margin-top:var(--s-3)">Ano</label>
+    <div class="tags">
+      {% for a in ['1.º','2.º','3.º','4.º','5.º'] %}
+      <input type="radio" class="tag-input" id="ano-{{ loop.index }}" name="ano" value="{{ a }}">
+      <label class="tag" for="ano-{{ loop.index }}">{{ a }}</label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section data-passo="2" hidden>
+    <h1 class="h1">Quando estudas?</h1>
+    <p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-5)">
+      Clica nos blocos em que costumas estar livre. É assim que te encontramos grupos compatíveis.
+    </p>
+
+    <div class="avail" id="grelha"></div>
+    <div class="avail-legend">
+      <span><i style="background:var(--c-surface-2)"></i>Ocupado</span>
+      <span><i style="background:rgba(216,166,43,.34)"></i>Disponível</span>
+    </div>
+    <input type="hidden" name="disponibilidade" id="disponibilidade">
+  </section>
+
+  <section data-passo="3" hidden>
+    <h1 class="h1">Como gostas<br>de estudar?</h1>
+    <p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-5)">
+      Escolhe tudo o que se aplique.
+    </p>
+
+    <label class="label">Estilo de estudo</label>
+    <div class="tags" style="margin-bottom:var(--s-5)">
+      {% for e in estilos %}
+      <input type="radio" class="tag-input" id="estilo-{{ loop.index }}" name="estilos" value="{{ e[0] }}" required>
+      <label class="tag" for="estilo-{{ loop.index }}">{{ e[1] }}</label>
+      {% endfor %}
+    </div>
+
+    <label class="label">Tópicos de interesse</label>
+    <div class="tags">
+      {% for t in topicos %}
+      <input type="checkbox" class="tag-input" id="topico-{{ loop.index }}" name="topicos" value="{{ t }}">
+      <label class="tag" for="topico-{{ loop.index }}">{{ t }}</label>
+      {% endfor %}
+    </div>
+  </section>
+
+  <div class="push-bottom" style="padding-top:var(--s-5)">
+    <button class="btn" type="submit" id="avancar">Continuar</button>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const grelha = document.getElementById('grelha');
+grelha.innerHTML = grelhaHTML(null, true);
+ligarGrelha(grelha);
+
+let passo = 1;
+const botao = document.getElementById('avancar');
+const contador = document.getElementById('contador');
+
+// Remove required attributes from hidden steps so they don't block the submit event
+document.querySelectorAll('section[hidden] [required]').forEach(el => {
+  el.dataset.required = 'true';
+  el.removeAttribute('required');
+});
+
+document.getElementById('formulario').addEventListener('submit', e => {
+  if (passo < 3) {
+    e.preventDefault();
+    document.querySelector(`[data-passo="${passo}"]`).hidden = true;
+    passo++;
+    
+    const novaSecao = document.querySelector(`[data-passo="${passo}"]`);
+    novaSecao.hidden = false;
+    
+    // Restore required attributes for the new step
+    novaSecao.querySelectorAll('[data-required]').forEach(el => {
+      el.setAttribute('required', 'required');
+    });
+
+    document.getElementById('s' + passo).classList.add('is-done');
+    contador.textContent = `Passo ${passo} de 3`;
+    botao.textContent = passo === 3 ? 'Criar conta' : 'Continuar';
+    scrollTo(0, 0);
+    return;
+  }
+  document.getElementById('disponibilidade').value = JSON.stringify(lerGrelha(grelha));
+});
+</script>
+{% endblock %}

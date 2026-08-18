@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block titulo %}Grupos{% endblock %}
+
+{% block conteudo %}
+<div class="row-between" style="margin-bottom:var(--s-5)">
+  <h1 class="h1">Grupos</h1>
+  <a class="btn btn--sm" href="{{ url_for('criar_grupo') }}" style="text-decoration:none">+ Criar</a>
+</div>
+
+{% if grupos %}
+  {% for g in grupos %}
+  <a class="card card--link" href="{{ url_for('grupo', grupo_id=g.id) }}"
+     style="display:block;text-decoration:none;color:inherit;margin-bottom:var(--s-3)">
+    <div class="row-between">
+      <div>
+        <h2 class="h3">{{ g.nome }}</h2>
+        <p class="text-sm text-muted">
+          {{ g.membros }} membros{% if g.proximo_encontro %} · {{ g.proximo_encontro }}{% endif %}
+        </p>
+      </div>
+      {% if g.admin %}
+        <span class="mono" style="font-size:10px;color:var(--c-gold)">ADMIN</span>
+      {% else %}
+        <span style="color:var(--c-text-2);font-size:18px">›</span>
+      {% endif %}
+    </div>
+  </a>
+  {% endfor %}
+{% else %}
+  <div class="empty">
+    <div class="empty-mark">▣</div>
+    <div class="h3">Ainda não estás em nenhum grupo</div>
+    <p class="text-sm text-muted" style="margin-top:var(--s-2)">
+      Vê as sugestões ou cria o teu próprio grupo de estudo.
+    </p>
+    <a class="btn btn--sm" href="{{ url_for('sugestoes') }}" style="margin-top:var(--s-4);text-decoration:none">Ver sugestões</a>
+  </div>
+{% endif %}
+
+{% if pedidos %}
+<hr class="divider">
+<span class="label">Pedidos por aprovar · {{ pedidos|length }}</span>
+{% for p in pedidos %}
+<div class="card" style="margin-bottom:var(--s-3)">
+  <div class="row">
+    <div class="avatar">{{ p.nome | iniciais }}</div>
+    <div style="flex:1">
+      <div class="h3">{{ p.nome }}</div>
+      <p class="text-sm text-muted">{{ p.grupo }} · {{ p.horas }}h em comum</p>
+    </div>
+  </div>
+  <div class="row" style="margin-top:var(--s-3)">
+    <form method="post" action="{{ url_for('responder_pedido', pedido_id=p.id) }}">
+      <input type="hidden" name="decisao" value="aceitar">
+      <button class="btn btn--sm" type="submit">Aceitar</button>
+    </form>
+    <form method="post" action="{{ url_for('responder_pedido', pedido_id=p.id) }}">
+      <input type="hidden" name="decisao" value="recusar">
+      <button class="btn btn--ghost btn--sm" type="submit">Recusar</button>
+    </form>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+{% endblock %}
+
+{% block navegacao %}
+  {% with ativo = 'grupos' %}{% include "_nav.html" %}{% endwith %}
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block titulo %}Editar perfil{% endblock %}
+
+{% block conteudo %}
+<div class="row-between" style="margin-bottom:var(--s-5)">
+  <a href="{{ url_for('perfil') }}" style="color:var(--c-text-2);text-decoration:none;font-size:20px">&times;</a>
+  <span class="label" style="margin:0">Editar perfil</span>
+</div>
+
+<form method="post" action="{{ url_for('editar_perfil') }}" id="formulario">
+
+  <label class="label" for="curso">Curso</label>
+  <select class="field" id="curso" name="curso">
+    {% for c in cursos %}
+    <option {{ 'selected' if c == utilizador.curso }}>{{ c }}</option>
+    {% endfor %}
+  </select>
+
+  <label class="label" style="margin-top:var(--s-4)">Disponibilidade</label>
+  <div class="card">
+    <div class="avail" id="grelha"></div>
+    <div class="avail-legend">
+      <span><i style="background:var(--c-surface-2)"></i>Ocupado</span>
+      <span><i style="background:rgba(216,166,43,.34)"></i>Disponível</span>
+    </div>
+    <p class="text-sm text-muted" style="margin-top:var(--s-3)">Clica nos blocos para alterares.</p>
+  </div>
+  <input type="hidden" name="disponibilidade" id="disponibilidade">
+
+  <label class="label" style="margin-top:var(--s-4)">Estilo de estudo</label>
+  <div class="tags" style="margin-bottom:var(--s-4)">
+    {% for e in estilos %}
+    <input type="checkbox" class="tag-input" id="estilo-{{ loop.index }}" name="estilos" value="{{ e }}"
+           {{ 'checked' if e in utilizador.estilos }}>
+    <label class="tag" for="estilo-{{ loop.index }}">{{ e }}</label>
+    {% endfor %}
+  </div>
+
+  <label class="label">Tópicos de interesse</label>
+  <div class="tags">
+    {% for t in topicos %}
+    <input type="checkbox" class="tag-input" id="topico-{{ loop.index }}" name="topicos" value="{{ t }}"
+           {{ 'checked' if t in utilizador.topicos }}>
+    <label class="tag" for="topico-{{ loop.index }}">{{ t }}</label>
+    {% endfor %}
+  </div>
+
+  <div class="push-bottom" style="padding-top:var(--s-5)">
+    <button class="btn" type="submit">Guardar alterações</button>
+  </div>
+
+</form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const grelha = document.getElementById('grelha');
+grelha.innerHTML = grelhaHTML({{ utilizador.disponibilidade|tojson }}, true);
+ligarGrelha(grelha);
+
+document.getElementById('formulario').addEventListener('submit', () => {
+  document.getElementById('disponibilidade').value = JSON.stringify(lerGrelha(grelha));
+});
+</script>
+{% endblock %}

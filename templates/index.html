@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+
+{% block conteudo %}
+<div style="margin-top:var(--s-7)">
+  <h1 class="h1">Study Group<br>Matcher</h1>
+  <p class="text-sm text-muted" style="margin-top:var(--s-2)">
+    Encontra pessoas que estudam o mesmo, à mesma hora que tu.
+  </p>
+</div>
+
+<form style="margin-top:var(--s-6)" method="post" action="{{ url_for('index') }}">
+  <label class="label" for="email">Email</label>
+  <input class="field" id="email" name="email" type="email" required>
+
+  <label class="label" for="pass" style="margin-top:var(--s-3)">Palavra-passe</label>
+  <input class="field" id="pass" name="pass" type="password" required>
+
+  {% if erro %}
+  <div style="margin-top:var(--s-3)">
+    <div class="toast toast--error">{{ erro }}</div>
+  </div>
+  {% endif %}
+
+  <p class="text-sm" style="text-align:right;margin:var(--s-3) 0 var(--s-5)">
+    <a href="#" style="color:var(--c-gold-soft);text-decoration:none">Esqueci-me da palavra-passe</a>
+  </p>
+
+  <button class="btn" type="submit">Entrar</button>
+  <a class="btn btn--ghost" href="{{ url_for('registo') }}" style="margin-top:var(--s-3);text-decoration:none">Criar conta</a>
+</form>
+
+<p class="mono text-muted push-bottom" style="text-align:center;letter-spacing:.1em;font-size:10px">
+  BUILD &amp; LEARN IT
+</p>
+{% endblock %}

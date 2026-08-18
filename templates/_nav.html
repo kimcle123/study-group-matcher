@@ -1,0 +1,6 @@
+<nav class="nav">
+  <a href="{{ url_for('sugestoes') }}" {% if ativo == 'sugestoes' %}aria-current="page"{% endif %}><span class="nav-icon">◎</span>Sugestões</a>
+  <a href="{{ url_for('grupos') }}" {% if ativo == 'grupos' %}aria-current="page"{% endif %}><span class="nav-icon">▣</span>Grupos</a>
+  <a href="{{ url_for('chat') }}" {% if ativo == 'chat' %}aria-current="page"{% endif %}><span class="nav-icon">✉</span>Mensagens</a>
+  <a href="{{ url_for('perfil') }}" {% if ativo == 'perfil' %}aria-current="page"{% endif %}><span class="nav-icon">◉</span>Perfil</a>
+</nav>

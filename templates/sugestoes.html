@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block titulo %}Sugestões{% endblock %}
+
+{% block conteudo %}
+<h1 class="h1">Sugestões</h1>
+<p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-5)">
+  {% if sugestoes %}
+    {{ sugestoes|length }} grupo{{ 's' if sugestoes|length != 1 }} com horários compatíveis com o teu.
+  {% endif %}
+</p>
+
+{% if sugestoes %}
+  {% for g in sugestoes %}
+  <article class="card" style="margin-bottom:var(--s-3)">
+    <div class="row-between" style="margin-bottom:var(--s-3)">
+      <div>
+        <h2 class="h3">{{ g.nome }}</h2>
+        <p class="text-sm text-muted">{{ g.membros }} membros · {{ g.disciplina }}</p>
+      </div>
+      <div style="text-align:right">
+        <div class="mono" style="font-size:22px;color:var(--c-gold);line-height:1">{{ g.horas }}h</div>
+        <div class="mono" style="font-size:9px;color:var(--c-text-2);letter-spacing:.1em">EM COMUM</div>
+      </div>
+    </div>
+
+    <div class="avail avail--readonly" data-grelha="{{ g.grelha|tojson }}"></div>
+
+    <div class="avail-legend" style="margin-bottom:var(--s-3)">
+      <span><i style="background:rgba(216,166,43,.34)"></i>Tu</span>
+      <span><i style="background:rgba(79,178,134,.30)"></i>O grupo</span>
+      <span><i style="background:var(--c-gold)"></i>Ambos</span>
+    </div>
+
+    <div class="tags" style="margin-bottom:var(--s-4)">
+      {% for t in g.etiquetas %}<span class="tag tag--static">{{ t }}</span>{% endfor %}
+    </div>
+
+    <div class="row">
+      <form method="post" action="{{ url_for('pedir_entrada', grupo_id=g.id) }}">
+        <button class="btn btn--sm" type="submit">Pedir para entrar</button>
+      </form>
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('grupo', grupo_id=g.id) }}" style="text-decoration:none">Ver grupo</a>
+    </div>
+  </article>
+  {% endfor %}
+{% else %}
+  <div class="empty">
+    <div class="empty-mark">◎</div>
+    <div class="h3">Ainda não há grupos compatíveis</div>
+    <p class="text-sm text-muted" style="margin-top:var(--s-2)">
+      Preenche mais horas na tua disponibilidade, ou funda o teu próprio grupo.
+    </p>
+    <a class="btn btn--sm" href="{{ url_for('criar_grupo') }}" style="margin-top:var(--s-4);text-decoration:none">Criar grupo</a>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block navegacao %}
+  {% with ativo = 'sugestoes' %}{% include "_nav.html" %}{% endwith %}
+{% endblock %}
+
+{% block scripts %}
+<script>desenharGrelhas();</script>
+{% endblock %}

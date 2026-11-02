@@ -24,7 +24,7 @@ As rotas assinaladas com 🔒 requerem sessão ativa (`@login_obrigatorio`). Cas
 | `/logout` | `GET` | 🔒 | Termina a sessão e limpa os cookies. |
 | `/perfil` | `GET` | 🔒 | Visualização do perfil e matriz de disponibilidade. |
 | `/editar-perfil` | `GET`, `POST` | 🔒 | Alteração de curso, disponibilidade, tópicos e estilos. |
-| `/sugestoes` | `GET` | 🔒 | Grupos recomendados por sobreposição de horário. |
+| `/sugestoes` | `GET` | 🔒 | Grupos recomendados por compatibilidade (horário, estilo, interesses, curso). Ver [matching](../architecture/matching.md). |
 | `/grupos` | `GET` | 🔒 | Lista de grupos do utilizador e pedidos pendentes. |
 | `/criar-grupo` | `GET`, `POST` | 🔒 | Criação de um novo grupo de estudo. |
 | `/grupo/<int:grupo_id>` | `GET` | 🔒 | Detalhes do grupo, mapa de calor e membros. |

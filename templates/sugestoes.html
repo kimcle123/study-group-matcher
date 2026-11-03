@@ -5,7 +5,7 @@
 <h1 class="h1">Sugestões</h1>
 <p class="text-sm text-muted" style="margin:var(--s-2) 0 var(--s-5)">
   {% if sugestoes %}
-    {{ sugestoes|length }} grupo{{ 's' if sugestoes|length != 1 }} com horários compatíveis com o teu.
+    {{ sugestoes|length }} grupo{{ 's' if sugestoes|length != 1 }} compatíveis contigo, do mais para o menos compatível.
   {% endif %}
 </p>
 
@@ -15,11 +15,11 @@
     <div class="row-between" style="margin-bottom:var(--s-3)">
       <div>
         <h2 class="h3">{{ g.nome }}</h2>
-        <p class="text-sm text-muted">{{ g.membros }} membros · {{ g.disciplina }}</p>
+        <p class="text-sm text-muted">{{ g.membros }}{% if g.max_membros %}/{{ g.max_membros }}{% endif %} membros · {{ g.disciplina }}</p>
       </div>
       <div style="text-align:right">
-        <div class="mono" style="font-size:22px;color:var(--c-gold);line-height:1">{{ g.horas }}h</div>
-        <div class="mono" style="font-size:9px;color:var(--c-text-2);letter-spacing:.1em">EM COMUM</div>
+        <div class="mono" style="font-size:22px;color:var(--c-gold);line-height:1">{{ g.pontuacao }}%</div>
+        <div class="mono" style="font-size:9px;color:var(--c-text-2);letter-spacing:.1em">COMPATÍVEL</div>
       </div>
     </div>
 
@@ -30,6 +30,10 @@
       <span><i style="background:rgba(79,178,134,.30)"></i>O grupo</span>
       <span><i style="background:var(--c-gold)"></i>Ambos</span>
     </div>
+
+    {% if g.razoes %}
+    <p class="text-sm text-muted" style="margin-bottom:var(--s-3)">{{ g.razoes|join(' · ') }}</p>
+    {% endif %}
 
     <div class="tags" style="margin-bottom:var(--s-4)">
       {% for t in g.etiquetas %}<span class="tag tag--static">{{ t }}</span>{% endfor %}

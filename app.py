@@ -7,6 +7,8 @@ import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 
+import matching
+
 # Carregar configurações a partir do ficheiro .env
 load_dotenv('ficheiro.env')
 
@@ -383,81 +385,21 @@ def editar_perfil():
 @app.route('/sugestoes')
 @login_obrigatorio
 def sugestoes():
-    """Sugere grupos com base na compatibilidade horária e de interesses."""
+    """Sugere grupos ordenados por compatibilidade (horário, estilo, interesses e curso)."""
     user_id = session['user_id']
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    # 1. Obter horários do utilizador atual
-    cursor.execute("SELECT disponibilidade_matriz, curso FROM utilizadores WHERE id = %s", (user_id,))
-    user_data = cursor.fetchone()
-    matriz_utilizador = converter_matriz_segura(user_data['disponibilidade_matriz'])
-    
-    # 2. Obter grupos em que o utilizador AINDA NÃO é membro
-    cursor.execute(
-        """
-        SELECT g.id, g.nome, g.disciplina, g.objetivo, g.proximo_encontro,
-               COUNT(m.utilizador_id) as total_membros
-        FROM grupos g
-        LEFT JOIN membros_grupo m ON g.id = m.grupo_id
-        WHERE g.id NOT IN (SELECT grupo_id FROM membros_grupo WHERE utilizador_id = %s)
-          AND g.id NOT IN (SELECT grupo_id FROM pedidos_adesao WHERE utilizador_id = %s AND status = 'pendente')
-        GROUP BY g.id
-        """,
-        (user_id, user_id)
-    )
-    grupos_candidatos = cursor.fetchall()
-    
-    lista_sugestoes = []
-    for g in grupos_candidatos:
-        grupo_id = g['id']
-        
-        # Obter estilos do grupo
-        cursor.execute("SELECT estilo FROM grupo_estilos WHERE grupo_id = %s", (grupo_id,))
-        etiquetas = [r['estilo'] for r in cursor.fetchall()]
-        if not etiquetas:
-            etiquetas = [g['disciplina']]
-            
-        # Obter matriz de horários combinada dos membros deste grupo
-        cursor.execute(
-            """
-            SELECT u.disponibilidade_matriz 
-            FROM utilizadores u
-            JOIN membros_grupo mg ON u.id = mg.utilizador_id
-            WHERE mg.grupo_id = %s
-            """,
-            (grupo_id,)
-        )
-        membros_matrizes = cursor.fetchall()
-        
-        # Matriz agregada do grupo
-        matriz_grupo = obter_matriz_vazia()
-        for m_row in membros_matrizes:
-            matriz_membro = converter_matriz_segura(m_row['disponibilidade_matriz'])
-            for p in range(3):
-                for d in range(7):
-                    if matriz_membro[p][d]:
-                        matriz_grupo[p][d] = 1
-                        
-        # Calcular sobreposição entre o utilizador e o grupo
-        horas_comuns, grelha_combinada = calcular_horas_comuns(matriz_utilizador, matriz_grupo)
-        
-        lista_sugestoes.append({
-            'id': g['id'],
-            'nome': g['nome'],
-            'disciplina': g['disciplina'],
-            'membros': g['total_membros'],
-            'horas': horas_comuns,
-            'grelha': grelha_combinada,
-            'etiquetas': etiquetas
-        })
-        
-    cursor.close()
-    conn.close()
-    
-    # Ordenar por mais horas em comum
-    lista_sugestoes.sort(key=lambda x: x['horas'], reverse=True)
-    
+    try:
+        utilizador, grupos_candidatos = matching.carregar_candidatos(cursor, user_id)
+    finally:
+        cursor.close()
+        conn.close()
+
+    if utilizador is None:
+        session.clear()
+        return redirect(url_for('index'))
+
+    lista_sugestoes = matching.sugerir_grupos(utilizador, grupos_candidatos)
     return render_template('sugestoes.html', sugestoes=lista_sugestoes)
 
 
